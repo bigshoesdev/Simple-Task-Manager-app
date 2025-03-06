@@ -1,51 +1,84 @@
-// src/App.tsx
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import TaskList from "./components/TaskList";
 import AddTaskForm from "./components/AddTaskForm";
+import { TaskProvider, useTaskContext } from "./contexts/TaskContext";
+import { fetchTasks } from "./services/api";
+import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
 
-type Task = {
-  id: number;
-  title: string;
-  completed: boolean;
-};
-
-const App = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
+const AppContent = () => {
+  const { state, dispatch } = useTaskContext();
 
   useEffect(() => {
-    fetch("https://jsonplaceholder.typicode.com/todos?_limit=5")
-      .then((res) => res.json())
-      .then((data) => setTasks(data));
-  }, []);
+    const getTasks = async () => {
+      const data = await fetchTasks();
+      dispatch({ type: "SET_TASKS", payload: [...data] });
+    };
+
+    getTasks();
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (state.tasks.length > 0) {
+      localStorage.removeItem("tasks");
+      localStorage.setItem("tasks", JSON.stringify(state.tasks));
+    }
+  }, [state.tasks]);
 
   const addTask = (title: string) => {
-    setTasks([...tasks, { id: Date.now(), title, completed: false }]);
+    dispatch({
+      type: "ADD_TASK",
+      payload: { id: Date.now(), title, completed: false },
+    });
   };
 
   const toggleTask = (id: number) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
+    dispatch({ type: "TOGGLE_TASK", payload: id });
   };
 
   const deleteTask = (id: number) => {
-    setTasks(tasks.filter((task) => task.id !== id));
+    dispatch({ type: "DELETE_TASK", payload: id });
   };
 
   return (
-    <div className="flex w-full">
-      <div className="container mx-auto p-4 max-w-md">
-        <h1 className="text-2xl font-bold mb-4 text-center text-red-500">Task Manager</h1>
+    <div className="w-full">
+      <div className="container border-[ffffff] border-8 rounded-xl bg-white shadow-md mx-auto p-10">
+        <h1 className="text-2xl font-bold mb-4 text-left">Task Manager</h1>
         <AddTaskForm addTask={addTask} />
-        <TaskList
-          tasks={tasks}
-          toggleTask={toggleTask}
-          deleteTask={deleteTask}
-        />
+        <div className="flex space-x-6">
+          <div className="flex-1 p-4 bg-blue-100 rounded-md border-blue-400 border">
+            <div className="mb-4 text-blue-500 font-bold text-xl">
+              <CheckBoxOutlineBlankIcon /> To do
+            </div>
+            <TaskList
+              tasks={state.tasks}
+              toggleTask={toggleTask}
+              deleteTask={deleteTask}
+              completed={false}
+            />
+          </div>
+          <div className="flex-1 p-4 bg-orange-100 rounded-md border-orange-400 border">
+            <div className="mb-4 text-orange-500 font-bold text-xl">
+              <CheckBoxIcon /> Done
+            </div>
+            <TaskList
+              tasks={state.tasks}
+              toggleTask={toggleTask}
+              deleteTask={deleteTask}
+              completed={true}
+            />
+          </div>
+        </div>
       </div>
     </div>
+  );
+};
+
+const App = () => {
+  return (
+    <TaskProvider>
+      <AppContent />
+    </TaskProvider>
   );
 };
 

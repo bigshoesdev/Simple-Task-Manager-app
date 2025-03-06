@@ -1,24 +1,34 @@
-// src/components/TaskList.tsx
 import TaskItem from "./TaskItem";
+import { motion, AnimatePresence } from "framer-motion";
+import { TaskListProps } from "src/definitions/type";
 
-type Task = {
-  id: number;
-  title: string;
-  completed: boolean;
-};
-
-type TaskListProps = {
-  tasks: Task[];
-  toggleTask: (id: number) => void;
-  deleteTask: (id: number) => void;
-};
-
-const TaskList = ({ tasks, toggleTask, deleteTask }: TaskListProps) => {
+const TaskList = ({
+  tasks,
+  toggleTask,
+  deleteTask,
+  completed,
+}: TaskListProps) => {
   return (
     <ul className="space-y-2">
-      {tasks.map((task) => (
-        <TaskItem key={task.id} task={task} toggleTask={toggleTask} deleteTask={deleteTask} />
-      ))}
+      <AnimatePresence>
+        {tasks
+          .filter((task) => task.completed === completed)
+          .map((task) => (
+            <motion.li
+              key={task.id}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <TaskItem
+                task={task}
+                toggleTask={toggleTask}
+                deleteTask={deleteTask}
+              />
+            </motion.li>
+          ))}
+      </AnimatePresence>
     </ul>
   );
 };

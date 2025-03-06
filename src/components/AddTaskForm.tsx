@@ -1,9 +1,6 @@
 // src/components/AddTaskForm.tsx
 import { useState } from "react";
-
-type AddTaskFormProps = {
-  addTask: (title: string) => void;
-};
+import { AddTaskFormProps } from "src/definitions/type";
 
 const AddTaskForm = ({ addTask }: AddTaskFormProps) => {
   const [title, setTitle] = useState("");
