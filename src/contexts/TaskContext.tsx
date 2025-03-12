@@ -1,41 +1,61 @@
-import { createContext, useReducer, ReactNode, useContext } from "react";
+import {
+  createContext,
+  useReducer,
+  ReactNode,
+  useContext,
+  Dispatch,
+} from "react";
 import { Task } from "src/definitions/type";
+import { saveTasksToLocalStorage } from "../utils/storage";
 
 interface TaskState {
   tasks: Task[];
 }
 
-interface TaskAction {
-  type: "ADD_TASK" | "TOGGLE_TASK" | "DELETE_TASK" | "SET_TASKS";
-  payload?: any;
-}
+type TaskAction =
+  | { type: "SET_TASKS"; payload: Task[] }
+  | { type: "ADD_TASK"; payload: Task }
+  | { type: "TOGGLE_TASK"; payload: number }
+  | { type: "DELETE_TASK"; payload: number };
 
 const taskReducer = (state: TaskState, action: TaskAction): TaskState => {
+  let tasks: Task[] = [];
+
   switch (action.type) {
     case "SET_TASKS":
-      return { ...state, tasks: action.payload };
+      tasks = action.payload;
+      break;
     case "ADD_TASK":
-      return { ...state, tasks: [...state.tasks, action.payload] };
+      tasks = [...state.tasks, action.payload];
+      break;
     case "TOGGLE_TASK":
-      return {
-        ...state,
-        tasks: state.tasks.map((task) =>
-          task.id === action.payload
-            ? { ...task, completed: !task.completed }
-            : task
-        ),
-      };
+      tasks = state.tasks.map((task) =>
+        task.id === action.payload
+          ? { ...task, completed: !task.completed }
+          : task
+      );
+      break;
     case "DELETE_TASK":
-      return {
-        ...state,
-        tasks: state.tasks.filter((task) => task.id !== action.payload),
-      };
+      tasks = state.tasks.filter((task) => task.id !== action.payload);
+      break;
     default:
       return state;
   }
+
+  saveTasksToLocalStorage(tasks);
+
+  return {
+    ...state,
+    tasks,
+  };
 };
 
-const TaskContext = createContext<any>(null);
+interface TaskContextType {
+  state: TaskState;
+  dispatch: Dispatch<TaskAction>;
+}
+
+const TaskContext = createContext<TaskContextType | undefined>(null);
 
 export const TaskProvider = ({ children }: { children: ReactNode }) => {
   const [state, dispatch] = useReducer(taskReducer, { tasks: [] });

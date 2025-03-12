@@ -4,26 +4,25 @@ import AddTaskForm from "./components/AddTaskForm";
 import { TaskProvider, useTaskContext } from "./contexts/TaskContext";
 import { fetchTasks } from "./services/api";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
-import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
+import { getTasksFromLocalStorage } from "./utils/storage";
 
 const AppContent = () => {
   const { state, dispatch } = useTaskContext();
 
   useEffect(() => {
     const getTasks = async () => {
-      const data = await fetchTasks();
-      dispatch({ type: "SET_TASKS", payload: [...data] });
+      let tasks = getTasksFromLocalStorage();
+
+      if (!tasks) {
+        tasks = await fetchTasks();
+      }
+
+      dispatch({ type: "SET_TASKS", payload: [...tasks] });
     };
 
     getTasks();
   }, [dispatch]);
-
-  useEffect(() => {
-    if (state.tasks.length > 0) {
-      localStorage.removeItem("tasks");
-      localStorage.setItem("tasks", JSON.stringify(state.tasks));
-    }
-  }, [state.tasks]);
 
   const addTask = (title: string) => {
     dispatch({
