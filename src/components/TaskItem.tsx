@@ -5,11 +5,13 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 const TaskItem = ({ task, toggleTask, deleteTask }: TaskItemProps) => {
   return (
-    <li className="flex justify-between p-2 border rounded-md bg-white flex-col">
+    <div className="flex justify-between p-2 border rounded-md bg-white flex-col">
       <div className="flex flex-row justify-end w-full">
         <div
           onClick={() => toggleTask(task.id)}
-          className={`py-1 text-gray-400 bg-white ${task.completed?"hover:text-orange-500":"hover:text-blue-500"} transition cursor-pointer`}
+          className={`py-1 text-gray-400 bg-white ${
+            task.completed ? "hover:text-orange-500" : "hover:text-blue-500"
+          } transition cursor-pointer`}
         >
           {task.completed ? <UndoIcon /> : <TaskAltIcon />}
         </div>
@@ -25,7 +27,7 @@ const TaskItem = ({ task, toggleTask, deleteTask }: TaskItemProps) => {
       >
         {task.title}
       </div>
-    </li>
+    </div>
   );
 };
 
